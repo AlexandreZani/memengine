@@ -29,3 +29,5 @@ lib: hash.o
 
 clean:
 	rm -rf *.o
+	rm -f test_unittest
+	rm -f test_hash
