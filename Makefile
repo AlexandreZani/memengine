@@ -1,14 +1,31 @@
+CFLAGS=-Wall -std=gnu99
+CC=gcc $(CFLAGS)
+
+# hash
+hash.o: hash.c hash.h
+	$(CC) -c hash.c
+
+test_hash.o: test_hash.c
+	$(CC) -c test_hash.c
+
+test_hash: unittest.o test_hash.o hash.o
+	$(CC) test_hash.o hash.o unittest.o -o test_hash
+	./test_hash
+
+# unittest
+unittest.o: unittest.c unittest.h
+	$(CC) -c unittest.c
+
+test_unittest.o: unittest.o test_unittest.c
+	$(CC) -c test_unittest.c
+
 test_unittest: test_unittest.o
-	gcc test_unittest.o unittest.o -o test_unittest
+	$(CC) test_unittest.o unittest.o -o test_unittest
 	./test_unittest
 
-test_unittest.o: test_unittest.c unittest.o
-	gcc -c test_unittest.c
+test: clean test_unittest test_hash
 
-unittest.o: unittest.c
-	gcc -c unittest.c
-
-test: clean test_unittest
+lib: hash.o
 
 clean:
 	rm -rf *.o

@@ -60,4 +60,5 @@ main(int argc, char **argv) {
   test_assert_float_not_equals();
   test_assert_float_equals_p();
   test_assert_float_not_equals_p();
+  return 0;
 }
