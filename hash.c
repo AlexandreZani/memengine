@@ -5,10 +5,10 @@
 
 uint32_t
 hash_8(uint8_t *data, uint32_t len) {
-  uint32_t new_len = len;
-  if (len % 4 > 0) {
-    new_len += 4 - (len % 4);
+  if (len % 4 == 0) {
+    return hash_32((uint32_t *)data, len / 4);
   }
+  uint32_t new_len = len + 4 - (len % 4);
   uint8_t *new_data = malloc(new_len);
   uint32_t hash;
 

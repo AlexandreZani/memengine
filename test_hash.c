@@ -39,10 +39,12 @@ test_hash_8_equal_odd_sizes() {
   assert_equals(hash_8(data7, 8), hash_8(data, 7));
   assert_equals(hash_8(data6, 8), hash_8(data, 6));
   assert_equals(hash_8(data5, 8), hash_8(data, 5));
+
   assert_equals(hash_8(data4, 4), hash_8(data, 4));
   assert_equals(hash_8(data3, 4), hash_8(data, 3));
   assert_equals(hash_8(data2, 4), hash_8(data, 2));
   assert_equals(hash_8(data1, 4), hash_8(data, 1));
+
   assert_equals(hash_8(data0, 0), hash_8(data, 0));
 }
 
