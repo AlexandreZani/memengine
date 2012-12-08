@@ -48,11 +48,28 @@ test_hash_8_equal_odd_sizes() {
   assert_equals(hash_8(data0, 0), hash_8(data, 0));
 }
 
+void
+test_hash_table_create() {
+  hash_table_t *table = create_hash_table(16);
+  assert_equals(0xf, table->mask);
+  assert_not_equals(0, table->entries);
+}
+
+void
+test_hash_table_set() {
+  char data[] = "some data";
+  hash_table_t *table = create_hash_table(16);
+  hash_table_set(table, (uint8_t *)"some key", 8, data);
+  assert_equals(data, hash_table_get(table, (uint8_t *)"some key", 8));
+}
+
 int
 main(int argc, char **argv) {
   test_hash_32_equal();
   test_hash_32_not_equal();
   test_hash_8_equal();
   test_hash_8_equal_odd_sizes();
+
+  test_hash_table_create();
   return 0;
 }

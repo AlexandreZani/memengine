@@ -48,3 +48,36 @@ hash_32(uint32_t *data, uint32_t len) {
 
   return hash;
 }
+
+hash_table_t*
+create_hash_table(uint32_t size) {
+  hash_table_t *table = malloc(sizeof(hash_table_t));
+
+  table->mask = 0x1;
+  while (table->mask < size-1) {
+    table->mask <<= 1;
+    table->mask += 1;
+  }
+
+  table->entries = malloc(sizeof(hash_table_entry_t));
+
+  return table;
+}
+
+void
+hash_table_set(hash_table_t* table, uint8_t *key, uint32_t key_size, void* data) {
+  uint32_t hash = hash_8(key, key_size);
+  hash_table_entry_t *entry = table->entries + (hash & table->mask);
+
+  entry->key_size = key_size;
+  entry->key = malloc(key_size);
+  memcpy(entry->key, key, key_size);
+  entry->data = data;
+}
+
+void*
+hash_table_get(hash_table_t* table, uint8_t *key, uint32_t key_size) {
+  uint32_t hash = hash_8(key, key_size);
+  hash_table_entry_t *entry = table->entries + (hash & table->mask);
+  return entry->data;
+}
