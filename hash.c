@@ -59,7 +59,8 @@ create_hash_table(uint32_t size) {
     table->mask += 1;
   }
 
-  table->entries = malloc(sizeof(hash_table_entry_t));
+  table->entries = malloc(sizeof(hash_table_entry_t) * (table->mask+1));
+  memset(table->entries, 0x00, sizeof(hash_table_entry_t) * (table->mask+1));
 
   return table;
 }
