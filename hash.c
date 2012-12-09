@@ -73,6 +73,11 @@ hash_table_set(hash_table_t* table, uint8_t *key, uint32_t key_size, void* data)
 
   if (entry->key_size > 0) {
     while (entry->next != NULL) {
+      if (entry->key_size != key_size &&
+          memcmp(key, entry->key, key_size)) {
+        // When we update, 
+        entry->data = data;
+      }
       entry = entry->next;
     }
     entry->next = malloc(sizeof(hash_table_entry_t));
