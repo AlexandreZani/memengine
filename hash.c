@@ -72,11 +72,19 @@ hash_table_set(hash_table_t* table, uint8_t *key, uint32_t key_size, void* data)
   hash_table_entry_t *entry = table->entries + (hash & table->mask);
 
   if (entry->key_size > 0) {
+    if (entry->key_size == key_size &&
+        memcmp(key, entry->key, key_size) == 0) {
+      // When we update, we do not free the memory for the old data.
+      entry->data = data;
+      return;
+    }
+
     while (entry->next != NULL) {
-      if (entry->key_size != key_size &&
-          memcmp(key, entry->key, key_size)) {
-        // When we update, 
+      if (entry->key_size == key_size &&
+          memcmp(key, entry->key, key_size) == 0) {
+        // When we update, we do not free the memory for the old data.
         entry->data = data;
+        return;
       }
       entry = entry->next;
     }
@@ -103,7 +111,7 @@ hash_table_get(hash_table_t* table, uint8_t *key, uint32_t key_size) {
   while (
       entry != NULL &&
       entry->key_size != key_size &&
-      memcmp(key, entry->key, key_size)) {
+      memcmp(key, entry->key, key_size) != 0) {
     entry = entry->next;
   }
 
