@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "unittest.h"
 #include "hash.h"
 
@@ -63,6 +65,38 @@ test_hash_table_set() {
   assert_equals(data, hash_table_get(table, (uint8_t *)"some key", 8));
 }
 
+void
+test_hash_table_get_null() {
+  hash_table_t *table = create_hash_table(16);
+  assert_equals(NULL, hash_table_get(table, (uint8_t *)"some key", 8));
+}
+
+void
+test_hash_table_collision_resolution() {
+  hash_table_t *table = create_hash_table(16);
+
+  char data1[] = "some data";
+  char data2[] = "some other data";
+  uint8_t key[] = { 0xFF, 0xAA, 0xBB, 0x00 };
+  hash_table_set(table, key, 4, data1);
+  hash_table_set(table, key, 3, data2);
+  assert_equals(data1, hash_table_get(table, key, 4));
+  assert_equals(data1, hash_table_get(table, key, 3));
+}
+
+void
+test_hash_table_data_update() {
+  hash_table_t *table = create_hash_table(16);
+
+  char data1[] = "some data";
+  char data2[] = "some other data";
+
+  hash_table_set(table, (uint8_t *)"some key", 8, data1);
+  assert_equals(data1, hash_table_get(table, (uint8_t *)"some key", 8));
+  hash_table_set(table, (uint8_t *)"some key", 8, data2);
+  assert_equals(data2, hash_table_get(table, (uint8_t *)"some key", 8));
+}
+
 int
 main(int argc, char **argv) {
   test_hash_32_equal();
@@ -71,5 +105,9 @@ main(int argc, char **argv) {
   test_hash_8_equal_odd_sizes();
 
   test_hash_table_create();
+  test_hash_table_set();
+  test_hash_table_get_null();
+  test_hash_table_collision_resolution();
+  test_hash_table_data_update();
   return 0;
 }

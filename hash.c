@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 uint32_t
 hash_8(uint8_t *data, uint32_t len) {
@@ -70,8 +71,17 @@ hash_table_set(hash_table_t* table, uint8_t *key, uint32_t key_size, void* data)
   uint32_t hash = hash_8(key, key_size);
   hash_table_entry_t *entry = table->entries + (hash & table->mask);
 
+  if (entry->key_size > 0) {
+    while (entry->next != NULL) {
+      entry = entry->next;
+    }
+    entry->next = malloc(sizeof(hash_table_entry_t));
+    entry = entry->next;
+  }
+
   entry->key_size = key_size;
   entry->key = malloc(key_size);
+  entry->next = NULL;
   memcpy(entry->key, key, key_size);
   entry->data = data;
 }
@@ -80,5 +90,21 @@ void*
 hash_table_get(hash_table_t* table, uint8_t *key, uint32_t key_size) {
   uint32_t hash = hash_8(key, key_size);
   hash_table_entry_t *entry = table->entries + (hash & table->mask);
+
+  if (entry->key_size == 0) {
+    return NULL;
+  }
+
+  while (
+      entry != NULL &&
+      entry->key_size != key_size &&
+      memcmp(key, entry->key, key_size)) {
+    entry = entry->next;
+  }
+
+  if (entry == NULL) {
+    return NULL;
+  }
+
   return entry->data;
 }
