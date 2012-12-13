@@ -97,6 +97,22 @@ test_hash_table_data_update() {
   assert_equals(data2, hash_table_get(table, (uint8_t *)"some key", 8));
 }
 
+void
+test_hash_table_unset() {
+  char data[] = "some data";
+  hash_table_t *table = create_hash_table(16);
+  hash_table_set(table, (uint8_t *)"some key", 8, data);
+  assert_equals(data, hash_table_get(table, (uint8_t *)"some key", 8));
+  hash_table_unset(table, (uint8_t *)"some key", 8);
+  assert_equals(NULL, hash_table_get(table, (uint8_t *)"some key", 8));
+}
+
+void
+test_hash_table_unset_null() {
+  hash_table_t *table = create_hash_table(16);
+  hash_table_unset(table, (uint8_t *)"some key", 8);
+}
+
 int
 main(int argc, char **argv) {
   test_hash_32_equal();
@@ -109,5 +125,8 @@ main(int argc, char **argv) {
   test_hash_table_get_null();
   test_hash_table_collision_resolution();
   test_hash_table_data_update();
+  test_hash_table_unset();
+  test_hash_table_unset_null();
+
   return 0;
 }

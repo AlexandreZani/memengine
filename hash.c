@@ -99,6 +99,40 @@ hash_table_set(hash_table_t* table, uint8_t *key, uint32_t key_size, void* data)
   entry->data = data;
 }
 
+void
+hash_table_unset(hash_table_t* table, uint8_t *key, uint32_t key_size) {
+  uint32_t hash = hash_8(key, key_size);
+  hash_table_entry_t *entry = table->entries + (hash & table->mask);
+  hash_table_entry_t *prev;
+
+  if (entry->key_size == 0) {
+    return;
+  }
+
+  if (entry->key_size == key_size &&
+      memcmp(key, entry->key, key_size) == 0) {
+    free(entry->key);
+    memset(entry, 0x00, sizeof(hash_table_entry_t));
+    return;
+  }
+
+  while (
+      entry != NULL &&
+      entry->key_size != key_size &&
+      memcmp(key, entry->key, key_size) != 0) {
+    prev = entry;
+    entry = entry->next;
+  }
+
+  if (entry == NULL) {
+    return;
+  }
+
+  prev->next = entry->next;
+  free(entry->key);
+  memset(entry, 0x00, sizeof(hash_table_entry_t));
+}
+
 void*
 hash_table_get(hash_table_t* table, uint8_t *key, uint32_t key_size) {
   uint32_t hash = hash_8(key, key_size);

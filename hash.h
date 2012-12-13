@@ -21,6 +21,8 @@ typedef struct {
 extern hash_table_t* create_hash_table(uint32_t size);
 extern void hash_table_set(hash_table_t* table, uint8_t *key,
     uint32_t key_size, void* data);
+extern void hash_table_unset(hash_table_t* table, uint8_t *key,
+    uint32_t key_size);
 extern void* hash_table_get(hash_table_t* table, uint8_t *key,
     uint32_t key_size);
 
