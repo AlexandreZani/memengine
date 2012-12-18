@@ -49,6 +49,16 @@ test_assert_float_not_equals_p() {
   assert_float_not_equals_p(4.0001, 5.0);
 }
 
+void
+test_assert_is_null() {
+  assert_is_null(NULL);
+}
+
+void
+test_assert_is_not_null() {
+  assert_is_not_null(NULL+1);
+}
+
 int
 main(int argc, char **argv) {
   test_assert_equals();
@@ -60,5 +70,7 @@ main(int argc, char **argv) {
   test_assert_float_not_equals();
   test_assert_float_equals_p();
   test_assert_float_not_equals_p();
+  test_assert_is_null();
+  test_assert_is_not_null();
   return 0;
 }
