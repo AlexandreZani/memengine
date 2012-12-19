@@ -14,3 +14,13 @@ create_heap(uint32_t slab_size, uint32_t slab_num) {
 
   return heap;
 }
+
+void*
+alloc_chunk(size_t size) {
+  return malloc(size);
+}
+
+void
+free_chunk(void *chunk) {
+  free(chunk);
+}

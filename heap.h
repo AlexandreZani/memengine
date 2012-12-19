@@ -2,6 +2,7 @@
 #define __HEAP_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 typedef struct {
   uint32_t chunk_size;
@@ -18,5 +19,7 @@ typedef struct {
 } heap_t;
 
 extern heap_t *create_heap(uint32_t slab_size, uint32_t slab_num);
+extern void *alloc_chunk(size_t size);
+extern void free_chunk(void *chunk);
 
 #endif
