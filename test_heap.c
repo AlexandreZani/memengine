@@ -9,6 +9,7 @@ test_create_heap() {
   assert_equals(1024 * 1024, heap->slab_size);
   assert_equals(500, heap->slab_num);
   assert_is_not_null(heap->mem);
+  assert_is_not_null(heap->slabs);
 }
 
 int

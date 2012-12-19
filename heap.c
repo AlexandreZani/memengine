@@ -10,6 +10,7 @@ create_heap(uint32_t slab_size, uint32_t slab_num) {
   heap->slab_num = slab_num;
   heap->total_size = slab_size * slab_num;
   heap->mem = malloc(heap->total_size);
+  heap->slabs = malloc(heap->slab_num);
 
   return heap;
 }
