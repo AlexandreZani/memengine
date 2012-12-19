@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #define UNITTEST_ABS(a) ((a) >= 0 ? (a) : -1 * (a))
 
