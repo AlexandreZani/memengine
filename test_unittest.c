@@ -59,6 +59,22 @@ test_assert_is_not_null() {
   assert_is_not_null(NULL+1);
 }
 
+void
+test_assert_equals_buf() {
+  char str1[] = "abcd";
+  char str2[] = "abcd";
+
+  assert_equals_buf(str1, str2, 4);
+}
+
+void
+test_assert_not_equals_buf() {
+  char str1[] = "abcd";
+  char str2[] = "abce";
+
+  assert_not_equals_buf(str1, str2, 4);
+}
+
 int
 main(int argc, char **argv) {
   test_assert_equals();
@@ -72,5 +88,7 @@ main(int argc, char **argv) {
   test_assert_float_not_equals_p();
   test_assert_is_null();
   test_assert_is_not_null();
+  test_assert_equals_buf();
+  test_assert_not_equals_buf();
   return 0;
 }

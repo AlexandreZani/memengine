@@ -23,4 +23,7 @@
 #define assert_is_null(a) assert_equals(NULL, a)
 #define assert_is_not_null(a) assert_not_equals(NULL, a)
 
+#define assert_equals_buf(a, b, sz) assert(memcmp(a, b, sz) == 0)
+#define assert_not_equals_buf(a, b, sz) assert(memcmp(a, b, sz) != 0)
+
 #endif // __UNITTEST_H
