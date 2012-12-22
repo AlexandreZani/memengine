@@ -58,19 +58,70 @@ test_hash_table_create() {
 }
 
 void
-test_hash_table_set() {
-  char data[] = "some data";
+test_hash_table_index_entry() {
+  char *key = "some key";
+  char *data = "some data";
+
   hash_table_t *table = create_hash_table(16);
-  hash_table_set(table, (uint8_t *)"some key", 8, data);
-  assert_equals(data, hash_table_get(table, (uint8_t *)"some key", 8));
+
+  size_t entry_size = calc_cache_entry_size(strlen(key), strlen(data));
+  cache_entry_t *cache_entry = malloc(entry_size);
+  assemble_cache_entry(cache_entry, key, strlen(key), data, strlen(data));
+
+  hash_table_index_entry(table, cache_entry);
+
+  assert_equals(cache_entry,
+      hash_table_get_entry(table, (uint8_t *)key, strlen(key)));
 }
 
 void
 test_hash_table_get_null() {
   hash_table_t *table = create_hash_table(16);
-  assert_equals(NULL, hash_table_get(table, (uint8_t *)"some key", 8));
+  assert_is_null(hash_table_get_entry(table, (uint8_t *)"some key", 8));
 }
 
+void
+test_hash_table_collision_resolution() {
+  hash_table_t *table = create_hash_table(16);
+
+  char data1[] = "some data";
+  char data2[] = "some other data";
+  // This test relies upon the hash algorithm operating on multiples of 2 and
+  // padding with 0x00 in order to generate 2 different keys with identical
+  // hashes.
+  uint8_t key[] = { 0xFF, 0xAA, 0xBB, 0x00 };
+
+  size_t entry_size_1 = calc_cache_entry_size(4, strlen(data1));
+  size_t entry_size_2 = calc_cache_entry_size(3, strlen(data2));
+
+  cache_entry_t *entry1 = malloc(entry_size_1);
+  cache_entry_t *entry2 = malloc(entry_size_2);
+
+  assemble_cache_entry(entry1, key, 4, data1, strlen(data1));
+  assemble_cache_entry(entry2, key, 3, data2, strlen(data2));
+
+  hash_table_index_entry(table, entry1);
+  hash_table_index_entry(table, entry2);
+
+  assert_equals(entry1, hash_table_get_entry(table, key, 4));
+  assert_equals(entry2, hash_table_get_entry(table, key, 3));
+}
+
+/*
+void
+test_hash_table_collision_resolution() {
+  hash_table_t *table = create_hash_table(16);
+
+  char data1[] = "some data";
+  char data2[] = "some other data";
+  uint8_t key[] = { 0xFF, 0xAA, 0xBB, 0x00 };
+  hash_table_set(table, key, 4, data1);
+  hash_table_set(table, key, 3, data2);
+  assert_equals(data1, hash_table_get(table, key, 4));
+  assert_equals(data1, hash_table_get(table, key, 3));
+}
+
+/*
 void
 test_hash_table_collision_resolution() {
   hash_table_t *table = create_hash_table(16);
@@ -112,6 +163,7 @@ test_hash_table_unset_null() {
   hash_table_t *table = create_hash_table(16);
   hash_table_unset(table, (uint8_t *)"some key", 8);
 }
+*/
 
 int
 main(int argc, char **argv) {
@@ -121,12 +173,14 @@ main(int argc, char **argv) {
   test_hash_8_equal_odd_sizes();
 
   test_hash_table_create();
-  test_hash_table_set();
+  test_hash_table_index_entry();
   test_hash_table_get_null();
   test_hash_table_collision_resolution();
+  /*
   test_hash_table_data_update();
   test_hash_table_unset();
   test_hash_table_unset_null();
+  */
 
   return 0;
 }

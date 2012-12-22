@@ -1,29 +1,27 @@
 #ifndef __HASH_H
 #define __HASH_H
 #include <stdint.h>
+#include "cache_entry.h"
 
 extern uint32_t hash_32(uint32_t *data, uint32_t len);
 extern uint32_t hash_8(uint8_t *data, uint32_t len);
 
-struct hash_table_entry_struct {
-  uint32_t key_size;
-  uint8_t *key;
-  void *data;
-  struct hash_table_entry_struct *next;
-};
-typedef struct hash_table_entry_struct hash_table_entry_t;
-
 typedef struct {
   uint32_t mask;
-  hash_table_entry_t *entries;
+  cache_entry_t **entries;
 } hash_table_t;
 
-extern hash_table_t* create_hash_table(uint32_t size);
+extern hash_table_t *create_hash_table(uint32_t size);
+extern void hash_table_index_entry(hash_table_t* table, cache_entry_t *entry);
+extern cache_entry_t *hash_table_get_entry(hash_table_t *table, uint8_t *key,
+    size_t key_size);
+/*
 extern void hash_table_set(hash_table_t* table, uint8_t *key,
     uint32_t key_size, void* data);
 extern void hash_table_unset(hash_table_t* table, uint8_t *key,
     uint32_t key_size);
 extern void* hash_table_get(hash_table_t* table, uint8_t *key,
     uint32_t key_size);
+*/
 
 #endif

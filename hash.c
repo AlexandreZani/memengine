@@ -60,12 +60,29 @@ create_hash_table(uint32_t size) {
     table->mask += 1;
   }
 
-  table->entries = malloc(sizeof(hash_table_entry_t) * (table->mask+1));
-  memset(table->entries, 0x00, sizeof(hash_table_entry_t) * (table->mask+1));
+  table->entries = malloc(sizeof(cache_entry_t *) * (table->mask+1));
+  memset(table->entries, 0x00, sizeof(cache_entry_t *) * (table->mask+1));
 
   return table;
 }
 
+void
+hash_table_index_entry(hash_table_t *table, cache_entry_t *entry) {
+  uint32_t hash = hash_8(entry->key, entry->key_size);
+  cache_entry_t **index_entry = table->entries + (hash & table->mask);
+
+  *index_entry = entry;
+}
+
+cache_entry_t *
+hash_table_get_entry(hash_table_t *table, uint8_t *key, size_t key_size) {
+  uint32_t hash = hash_8(key, key_size);
+  cache_entry_t **entry = table->entries + (hash & table->mask);
+
+  return *entry;
+}
+
+/*
 void
 hash_table_set(hash_table_t* table, uint8_t *key, uint32_t key_size, void* data) {
   uint32_t hash = hash_8(key, key_size);
@@ -155,3 +172,4 @@ hash_table_get(hash_table_t* table, uint8_t *key, uint32_t key_size) {
 
   return entry->data;
 }
+*/

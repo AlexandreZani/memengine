@@ -21,14 +21,14 @@ test_heap: test_heap.o unittest.o heap.o
 	./test_heap
 
 # hash
-hash.o: hash.c hash.h
+hash.o: hash.c hash.h cache_entry.o
 	$(CC) -c hash.c
 
 test_hash.o: test_hash.c
 	$(CC) -c test_hash.c
 
 test_hash: unittest.o test_hash.o hash.o
-	$(CC) test_hash.o hash.o unittest.o -o test_hash
+	$(CC) test_hash.o hash.o unittest.o cache_entry.o -o test_hash
 	./test_hash
 
 # unittest
