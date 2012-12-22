@@ -24,6 +24,7 @@ test_assemble_cache_entry() {
   assert_equals(strlen(data), cache_entry->data_size);
   assert_equals_buf(key, cache_entry->key, cache_entry->key_size);
   assert_equals_buf(data, cache_entry->data, cache_entry->data_size);
+  assert_is_null(cache_entry->hash_table_next);
 }
 
 

@@ -3,12 +3,15 @@
 
 #include <stdlib.h>
 
-typedef struct {
+struct cache_entry_struct {
   size_t key_size;
   size_t data_size;
   void *key;
   void *data;
-} cache_entry_t;
+  struct cache_entry_struct *hash_table_next;
+};
+
+typedef struct cache_entry_struct cache_entry_t;
 
 #define calc_cache_entry_size(key_size, data_size) \
   (sizeof(cache_entry_t) + key_size + data_size)

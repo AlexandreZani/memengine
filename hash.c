@@ -71,6 +71,10 @@ hash_table_index_entry(hash_table_t *table, cache_entry_t *entry) {
   uint32_t hash = hash_8(entry->key, entry->key_size);
   cache_entry_t **index_entry = table->entries + (hash & table->mask);
 
+  while (*index_entry != NULL) {
+    index_entry = &((*index_entry)->hash_table_next);
+  }
+
   *index_entry = entry;
 }
 
@@ -78,6 +82,12 @@ cache_entry_t *
 hash_table_get_entry(hash_table_t *table, uint8_t *key, size_t key_size) {
   uint32_t hash = hash_8(key, key_size);
   cache_entry_t **entry = table->entries + (hash & table->mask);
+
+  while ((*entry != NULL) && !(
+        ((*entry)->key_size == key_size) &&
+        (memcmp((*entry)->key, key, key_size) == 0))) {
+    entry = &((*entry)->hash_table_next);
+  }
 
   return *entry;
 }

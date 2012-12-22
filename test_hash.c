@@ -81,6 +81,25 @@ test_hash_table_get_null() {
 }
 
 void
+test_hash_table_collision_resolution_null() {
+  hash_table_t *table = create_hash_table(16);
+
+  char data[] = "some data";
+  // This test relies upon the hash algorithm operating on multiples of 2 and
+  // padding with 0x00 in order to generate 2 different keys with identical
+  // hashes.
+  uint8_t key[] = { 0xFF, 0xAA, 0xBB, 0x00 };
+
+  size_t entry_size = calc_cache_entry_size(4, strlen(data));
+  cache_entry_t *entry = malloc(entry_size);
+  assemble_cache_entry(entry, key, 4, data, strlen(data));
+  hash_table_index_entry(table, entry);
+
+  assert_equals(entry, hash_table_get_entry(table, key, 4));
+  assert_is_null(hash_table_get_entry(table, key, 3));
+}
+
+void
 test_hash_table_collision_resolution() {
   hash_table_t *table = create_hash_table(16);
 
@@ -176,6 +195,7 @@ main(int argc, char **argv) {
   test_hash_table_index_entry();
   test_hash_table_get_null();
   test_hash_table_collision_resolution();
+  test_hash_table_collision_resolution_null();
   /*
   test_hash_table_data_update();
   test_hash_table_unset();
