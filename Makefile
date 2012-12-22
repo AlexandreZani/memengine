@@ -1,6 +1,14 @@
 CFLAGS=-Wall -std=gnu99
 CC=gcc $(CFLAGS)
 
+# cache_entry
+cache_entry.o: cache_entry.c cache_entry.h
+	$(CC) -c cache_entry.c
+
+test_cache_entry: test_cache_entry.c unittest.o cache_entry.o
+	$(CC) test_cache_entry.c cache_entry.o unittest.o -o test_cache_entry
+	./test_cache_entry
+
 # heap
 heap.o: heap.c heap.h
 	$(CC) -c heap.c
@@ -34,7 +42,7 @@ test_unittest: test_unittest.o
 	$(CC) test_unittest.o unittest.o -o test_unittest
 	./test_unittest
 
-test: clean test_unittest test_hash test_heap
+test: clean test_unittest test_hash test_heap test_cache_entry
 
 lib: hash.o
 
@@ -43,3 +51,4 @@ clean:
 	rm -f test_unittest
 	rm -f test_hash
 	rm -f test_heap
+	rm -f test_cache_entry
