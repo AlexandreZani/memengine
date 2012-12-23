@@ -272,7 +272,7 @@ main(int argc, char **argv) {
   test_hash_table_collision_resolution();
   test_hash_table_collision_resolution_null();
   test_hash_table_data_update_collisions();
-  //test_hash_table_data_update();
+  test_hash_table_data_update();
   /*
   test_hash_table_unset();
   test_hash_table_unset_null();
