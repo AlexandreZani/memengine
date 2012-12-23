@@ -66,16 +66,26 @@ create_hash_table(uint32_t size) {
   return table;
 }
 
-void
+cache_entry_t *
 hash_table_index_entry(hash_table_t *table, cache_entry_t *entry) {
   uint32_t hash = hash_8(entry->key, entry->key_size);
   cache_entry_t **index_entry = table->entries + (hash & table->mask);
+  cache_entry_t *to_free = NULL;
 
-  while (*index_entry != NULL) {
+
+  while (*index_entry != NULL && !(
+        ((*index_entry)->key_size == entry->key_size) &&
+        (memcmp((*index_entry)->key, entry->key, entry->key_size) == 0))) {
     index_entry = &((*index_entry)->hash_table_next);
   }
 
+  if (*index_entry != NULL) {
+    to_free = *index_entry;
+    entry->hash_table_next = to_free->hash_table_next;
+  }
+
   *index_entry = entry;
+  return to_free;
 }
 
 cache_entry_t *

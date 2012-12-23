@@ -126,34 +126,109 @@ test_hash_table_collision_resolution() {
   assert_equals(entry2, hash_table_get_entry(table, key, 3));
 }
 
-/*
 void
-test_hash_table_collision_resolution() {
+test_hash_table_data_update_collisions() {
   hash_table_t *table = create_hash_table(16);
 
   char data1[] = "some data";
   char data2[] = "some other data";
-  uint8_t key[] = { 0xFF, 0xAA, 0xBB, 0x00 };
-  hash_table_set(table, key, 4, data1);
-  hash_table_set(table, key, 3, data2);
-  assert_equals(data1, hash_table_get(table, key, 4));
-  assert_equals(data1, hash_table_get(table, key, 3));
+  char data3[] = "some more data";
+  // This test relies upon the hash algorithm operating on multiples of 2 and
+  // padding with 0x00 in order to generate 2 different keys with identical
+  // hashes.
+  uint8_t key[] = { 0xFF, 0xAA, 0x00, 0x00 };
+
+  size_t key_size1 = 4;
+  size_t key_size2 = 3;
+  size_t key_size3 = 2;
+
+  size_t entry_size_1 = calc_cache_entry_size(key_size1, strlen(data1));
+  size_t entry_size_2 = calc_cache_entry_size(key_size2, strlen(data2));
+  size_t entry_size_3 = calc_cache_entry_size(key_size3, strlen(data3));
+
+  cache_entry_t *entry1 = malloc(entry_size_1);
+  cache_entry_t *entry2 = malloc(entry_size_2);
+  cache_entry_t *entry3 = malloc(entry_size_3);
+
+  assemble_cache_entry(entry1, key, key_size1, (uint8_t *)data1, strlen(data1));
+  assemble_cache_entry(entry2, key, key_size2, (uint8_t *)data2, strlen(data2));
+  assemble_cache_entry(entry3, key, key_size3, (uint8_t *)data3, strlen(data3));
+
+  assert_is_null(hash_table_index_entry(table, entry1));
+  assert_equals(entry1, hash_table_get_entry(table, key, key_size1));
+  assert_is_null(hash_table_index_entry(table, entry2));
+  assert_equals(entry2, hash_table_get_entry(table, key, key_size2));
+  assert_is_null(hash_table_index_entry(table, entry3));
+
+  assert_equals(entry1, hash_table_get_entry(table, key, key_size1));
+  assert_equals(entry2, hash_table_get_entry(table, key, key_size2));
+  assert_equals(entry3, hash_table_get_entry(table, key, key_size3));
+
+  char new_data1[] = "some new_data";
+  char new_data2[] = "some other new_data";
+  char new_data3[] = "some more new_data";
+
+  size_t new_entry_size_1 = calc_cache_entry_size(key_size1, strlen(new_data1));
+  size_t new_entry_size_2 = calc_cache_entry_size(key_size2, strlen(new_data2));
+  size_t new_entry_size_3 = calc_cache_entry_size(key_size3, strlen(new_data3));
+
+  cache_entry_t *new_entry1 = malloc(new_entry_size_1);
+  cache_entry_t *new_entry2 = malloc(new_entry_size_2);
+  cache_entry_t *new_entry3 = malloc(new_entry_size_3);
+
+  assemble_cache_entry(new_entry1, key, key_size1, (uint8_t *)new_data1, strlen(data1));
+  assemble_cache_entry(new_entry2, key, key_size2, (uint8_t *)new_data2, strlen(data2));
+  assemble_cache_entry(new_entry3, key, key_size3, (uint8_t *)new_data3, strlen(data3));
+
+  assert_equals(entry2, hash_table_index_entry(table, new_entry2));
+  assert_equals(entry1, hash_table_get_entry(table, key, key_size1));
+  assert_equals(new_entry2, hash_table_get_entry(table, key, key_size2));
+  assert_equals(entry3, hash_table_get_entry(table, key, key_size3));
+
+  assert_equals(entry1, hash_table_index_entry(table, new_entry1));
+  assert_equals(new_entry1, hash_table_get_entry(table, key, key_size1));
+  assert_equals(new_entry2, hash_table_get_entry(table, key, key_size2));
+  assert_equals(entry3, hash_table_get_entry(table, key, key_size3));
+
+  assert_equals(entry3, hash_table_index_entry(table, new_entry3));
+  assert_equals(new_entry1, hash_table_get_entry(table, key, key_size1));
+  assert_equals(new_entry2, hash_table_get_entry(table, key, key_size2));
+  assert_equals(new_entry3, hash_table_get_entry(table, key, key_size3));
 }
 
-/*
 void
-test_hash_table_collision_resolution() {
+test_hash_table_data_update() {
   hash_table_t *table = create_hash_table(16);
 
   char data1[] = "some data";
   char data2[] = "some other data";
-  uint8_t key[] = { 0xFF, 0xAA, 0xBB, 0x00 };
-  hash_table_set(table, key, 4, data1);
-  hash_table_set(table, key, 3, data2);
-  assert_equals(data1, hash_table_get(table, key, 4));
-  assert_equals(data1, hash_table_get(table, key, 3));
+  char key[] = "some_key";
+
+  size_t entry_size_1 = calc_cache_entry_size(strlen(key), strlen(data1));
+  size_t entry_size_2 = calc_cache_entry_size(strlen(key), strlen(data2));
+
+  cache_entry_t *entry1 = malloc(entry_size_1);
+  cache_entry_t *entry2 = malloc(entry_size_2);
+
+  assemble_cache_entry(entry1, (uint8_t *)key, strlen(key), (uint8_t *)data1,
+      strlen(data1));
+  assemble_cache_entry(entry2, (uint8_t *)key, strlen(key), (uint8_t *)data2,
+      strlen(data2));
+
+  hash_table_index_entry(table, entry1);
+  // Check that the first entry was correctly indexed.
+  assert_equals(entry1, hash_table_get_entry(table, (uint8_t *)key,
+        strlen(key)));
+
+  // Check that the first entry is returned when the second entry is indexed
+  // So that the first entry may be freed by the caller.
+  assert_equals(entry1, hash_table_index_entry(table, entry2));
+
+  // Check that second entry was correctly indexed.
+  assert_equals(entry2, hash_table_get_entry(table, (uint8_t *)key, strlen(key)));
 }
 
+/*
 void
 test_hash_table_data_update() {
   hash_table_t *table = create_hash_table(16);
@@ -196,8 +271,9 @@ main(int argc, char **argv) {
   test_hash_table_get_null();
   test_hash_table_collision_resolution();
   test_hash_table_collision_resolution_null();
+  test_hash_table_data_update_collisions();
+  //test_hash_table_data_update();
   /*
-  test_hash_table_data_update();
   test_hash_table_unset();
   test_hash_table_unset_null();
   */
