@@ -102,6 +102,26 @@ hash_table_get_entry(hash_table_t *table, uint8_t *key, size_t key_size) {
   return *entry;
 }
 
+cache_entry_t *
+hash_table_deindex(hash_table_t *table, uint8_t *key, size_t key_size) {
+  uint32_t hash = hash_8(key, key_size);
+  cache_entry_t **entry = table->entries + (hash & table->mask);
+  cache_entry_t *old_entry = NULL;
+
+  while ((*entry != NULL) && !(
+        ((*entry)->key_size == key_size) &&
+        (memcmp((*entry)->key, key, key_size) == 0))) {
+    entry = &((*entry)->hash_table_next);
+  }
+
+  old_entry = *entry;
+  if (*entry != NULL) {
+    *entry = (*entry)->hash_table_next;
+  }
+
+  return old_entry;
+}
+
 /*
 void
 hash_table_set(hash_table_t* table, uint8_t *key, uint32_t key_size, void* data) {

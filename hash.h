@@ -16,13 +16,6 @@ extern cache_entry_t *hash_table_index_entry(hash_table_t* table,
     cache_entry_t *entry);
 extern cache_entry_t *hash_table_get_entry(hash_table_t *table, uint8_t *key,
     size_t key_size);
-/*
-extern void hash_table_set(hash_table_t* table, uint8_t *key,
-    uint32_t key_size, void* data);
-extern void hash_table_unset(hash_table_t* table, uint8_t *key,
-    uint32_t key_size);
-extern void* hash_table_get(hash_table_t* table, uint8_t *key,
-    uint32_t key_size);
-*/
-
+extern cache_entry_t *hash_table_deindex(hash_table_t *table, uint8_t *key,
+    size_t key_size);
 #endif
