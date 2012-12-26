@@ -13,33 +13,24 @@ test_cache_entry: test_cache_entry.c unittest.o cache_entry.o
 heap.o: heap.c heap.h
 	$(CC) -c heap.c
 
-test_heap.o: test_heap.c
-	$(CC) -c test_heap.c
-
-test_heap: test_heap.o unittest.o heap.o
-	$(CC) test_heap.o heap.o unittest.o -o test_heap
+test_heap: test_heap.c unittest.o heap.o
+	$(CC) test_heap.c heap.o unittest.o -o test_heap
 	./test_heap
 
 # hash
 hash.o: hash.c hash.h cache_entry.o
 	$(CC) -c hash.c
 
-test_hash.o: test_hash.c
-	$(CC) -c test_hash.c
-
-test_hash: unittest.o test_hash.o hash.o
-	$(CC) test_hash.o hash.o unittest.o cache_entry.o -o test_hash
+test_hash: unittest.o test_hash.c hash.o
+	$(CC) test_hash.c hash.o unittest.o cache_entry.o -o test_hash
 	./test_hash
 
 # unittest
 unittest.o: unittest.c unittest.h
 	$(CC) -c unittest.c
 
-test_unittest.o: unittest.o test_unittest.c
-	$(CC) -c test_unittest.c
-
-test_unittest: test_unittest.o
-	$(CC) test_unittest.o unittest.o -o test_unittest
+test_unittest: test_unittest.c unittest.o
+	$(CC) test_unittest.c unittest.o -o test_unittest
 	./test_unittest
 
 test: clean test_unittest test_hash test_heap test_cache_entry
