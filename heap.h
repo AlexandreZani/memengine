@@ -5,9 +5,11 @@
 #include <stdlib.h>
 
 typedef struct {
-  uint32_t chunk_size;
+  size_t chunk_size;
+  size_t slab_size;
   void *open_field;
   void *mem;
+  void *free_chunks;
 } slab_t;
 
 typedef struct {
@@ -18,8 +20,8 @@ typedef struct {
   slab_t *slabs;
 } heap_t;
 
-extern heap_t *create_heap(uint32_t slab_size, uint32_t slab_num);
-extern void *alloc_chunk(size_t size);
-extern void free_chunk(void *chunk);
+extern heap_t *create_heap(size_t slab_size, uint32_t slab_num);
+extern void *alloc_chunk(heap_t *heap, size_t size);
+extern void free_chunk(heap_t *heap, void *chunk);
 
 #endif

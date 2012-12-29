@@ -1,4 +1,4 @@
-CFLAGS=-Wall -std=gnu99
+CFLAGS=-Wall -std=gnu99 -ggdb
 CC=gcc $(CFLAGS)
 
 # cache_entry
@@ -34,6 +34,8 @@ test_unittest: test_unittest.c unittest.o
 	./test_unittest
 
 test: clean test_unittest test_hash test_heap test_cache_entry
+
+.PRECIOUS: test_unittest test_hash test_heap test_cache_entry
 
 lib: hash.o
 
