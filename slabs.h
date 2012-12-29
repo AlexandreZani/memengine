@@ -1,5 +1,5 @@
-#ifndef __HEAP_H
-#define __HEAP_H
+#ifndef __SLABS_H
+#define __SLABS_H
 
 #include <stdint.h>
 #include <stdlib.h>

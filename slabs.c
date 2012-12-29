@@ -1,4 +1,4 @@
-#include "heap.h"
+#include "slabs.h"
 
 #include <stdlib.h>
 #include <assert.h>
