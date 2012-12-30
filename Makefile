@@ -17,6 +17,14 @@ test_slabs: test_slabs.c unittest.o slabs.o
 	$(CC) test_slabs.c slabs.o unittest.o -o test_slabs
 	./test_slabs
 
+# arenas
+arenas.o: arenas.c arenas.h
+	$(CC) -c arenas.c
+
+test_arenas: test_arenas.c unittest.o arenas.o
+	$(CC) test_arenas.c arenas.o unittest.o -o test_arenas
+	./test_arenas
+
 # hash
 hash.o: hash.c hash.h cache_entry.o
 	$(CC) -c hash.c
@@ -33,9 +41,9 @@ test_unittest: test_unittest.c unittest.o
 	$(CC) test_unittest.c unittest.o -o test_unittest
 	./test_unittest
 
-test: clean test_unittest test_hash test_slabs test_cache_entry
+test: clean test_unittest test_hash test_slabs test_cache_entry test_arenas
 
-.PRECIOUS: test_unittest test_hash test_slabs test_cache_entry
+.PRECIOUS: test_unittest test_hash test_slabs test_cache_entry test_arenas
 
 lib: hash.o
 
@@ -45,3 +53,4 @@ clean:
 	rm -f test_hash
 	rm -f test_slabs
 	rm -f test_cache_entry
+	rm -f test_arenas
