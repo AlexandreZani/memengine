@@ -10,6 +10,7 @@ typedef struct {
   uint8_t *open_field;
   uint8_t *mem;
   uint8_t **free_chunks;
+  uint8_t max_size_class;
 } arena_t;
 
 typedef struct {

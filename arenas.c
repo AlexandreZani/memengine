@@ -2,6 +2,10 @@
 
 #include <stdbool.h>
 
+// If the chunk is too small, we can't fit a pointer in it and the free
+// list breaks.
+#define MIN_CHUNK_SIZE (sizeof(void *))
+
 /*
  * Size class
  * the size class of a chunk is an 8-bit number representing how large the
@@ -13,6 +17,9 @@
 void
 calc_size_class_and_min_chunk_size(size_t size, uint8_t *size_class,
     size_t *chunk_size) {
+  if (size < MIN_CHUNK_SIZE) {
+    size = MIN_CHUNK_SIZE;
+  }
   *size_class = 0;
   *chunk_size = 1;
 
@@ -56,12 +63,16 @@ create_heap(size_t arena_size, uint32_t arena_num) {
   // size which fits the whole arena.
   uint8_t max_size_class = calc_size_class(heap->arena_size);
   for (int arena_i = 0; arena_i < heap->arena_num; arena_i++) {
+    heap->arenas[arena_i].max_size_class = max_size_class;
     heap->arenas[arena_i].arena_size = heap->arena_size;
     heap->arenas[arena_i].mem = heap->mem + (arena_i * heap->arena_size);
     heap->arenas[arena_i].open_field = heap->arenas[arena_i].mem;
     heap->arenas[arena_i].free_chunks = malloc((max_size_class + 1) * sizeof(void *));
     if (heap->arenas[arena_i].free_chunks == NULL) {
       return NULL;
+    }
+    for (int free_i = 0; free_i < max_size_class; free_i++) {
+      heap->arenas[arena_i].free_chunks[free_i] = NULL;
     }
   }
 
@@ -71,22 +82,54 @@ create_heap(size_t arena_size, uint32_t arena_num) {
 void *
 alloc_chunk_from_arena(arena_t *arena, size_t chunk_size,
     uint8_t chunk_size_class) {
-  uint8_t *chunk;
+  uint8_t *chunk = NULL;
   if (arena->free_chunks[chunk_size_class] != NULL) {
     chunk = arena->free_chunks[chunk_size_class];
     arena->free_chunks[chunk_size_class] = *(uint8_t **)chunk;
     return (void *)chunk;
   }
 
-  if (arena->open_field - arena->mem >= arena->arena_size) {
-    return NULL;
+  if (arena->open_field - arena->mem <= (arena->arena_size - chunk_size)) {
+    chunk = arena->open_field;
+    *chunk = chunk_size_class;
+    arena->open_field += chunk_size;
+    return (void *)(chunk + 1);
   }
 
-  chunk = arena->open_field;
-  *chunk = chunk_size_class;
-  arena->open_field += chunk_size;
+  uint8_t size_class = chunk_size_class;
+  size_t size = chunk_size;
+  while (arena->free_chunks[size_class] == NULL) {
+    if (size_class >= arena->max_size_class) {
+      return NULL;
+    }
+    size_class++;
+    size *= 2;
+  }
 
-  return (void *)(chunk + 1);
+  uint8_t *big_chunk;
+  void **big_chunk_as_ptr;
+  while (size_class > chunk_size_class) {
+    big_chunk = arena->free_chunks[size_class];
+    arena->free_chunks[size_class] = *(uint8_t **)big_chunk;
+
+    size_class--;
+    size /= 2;
+
+    *(big_chunk - 1) = size_class;
+    big_chunk_as_ptr = (void *)big_chunk;
+    *big_chunk_as_ptr = arena->free_chunks[size_class];
+    arena->free_chunks[size_class] = (uint8_t *)big_chunk_as_ptr;
+
+    big_chunk += size;
+    *(big_chunk - 1) = size_class;
+    big_chunk_as_ptr = (void *)big_chunk;
+    *big_chunk_as_ptr = arena->free_chunks[size_class];
+    arena->free_chunks[size_class] = (uint8_t *)big_chunk_as_ptr;
+  }
+
+  chunk = arena->free_chunks[chunk_size_class];
+  arena->free_chunks[chunk_size_class] = *(uint8_t **)chunk;
+  return (void *)chunk;
 }
 
 void *
