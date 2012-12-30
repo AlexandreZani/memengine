@@ -10,19 +10,6 @@
  * for data.
  */
 
-uint8_t
-calc_size_class(size_t size) {
-  uint8_t size_class = 0;
-  size_t chunk_size = 1;
-
-  while ((chunk_size - 1) < size) {
-    size_class++;
-    chunk_size *= 2;
-  }
-
-  return size_class;
-}
-
 void
 calc_size_class_and_min_chunk_size(size_t size, uint8_t *size_class,
     size_t *chunk_size) {
@@ -33,6 +20,15 @@ calc_size_class_and_min_chunk_size(size_t size, uint8_t *size_class,
     (*size_class) += 1;
     (*chunk_size) *= 2;
   }
+}
+
+uint8_t
+calc_size_class(size_t size) {
+  uint8_t size_class;
+  size_t chunk_size;
+  calc_size_class_and_min_chunk_size(size, &size_class, &chunk_size);
+
+  return size_class;
 }
 
 heap_t*
