@@ -1,4 +1,4 @@
-CFLAGS=-Wall -std=gnu99 -ggdb
+CFLAGS=-Wall -std=gnu99 -ggdb -D_THREAD_SAFE -pthread
 CC=gcc $(CFLAGS)
 
 # cache_entry

@@ -63,6 +63,7 @@ create_heap(size_t arena_size, uint32_t arena_num) {
   // size which fits the whole arena.
   uint8_t max_size_class = calc_size_class(heap->arena_size);
   for (int arena_i = 0; arena_i < heap->arena_num; arena_i++) {
+    pthread_mutex_init(&(heap->arenas[arena_i].mutex), NULL);
     heap->arenas[arena_i].max_size_class = max_size_class;
     heap->arenas[arena_i].arena_size = heap->arena_size;
     heap->arenas[arena_i].mem = heap->mem + (arena_i * heap->arena_size);
@@ -139,14 +140,34 @@ alloc_chunk(heap_t *heap, size_t size) {
   uint8_t chunk_size_class;
   calc_size_class_and_min_chunk_size(size, &chunk_size_class, &chunk_size);
 
+  int tried_arenas_num = 0;
+  bool *tried_arenas = malloc(sizeof(bool) * heap->arena_num);
   for (int i = 0; i < heap->arena_num; i++) {
-    chunk = alloc_chunk_from_arena(&(heap->arenas[i]), chunk_size,
-                                   chunk_size_class);
-    if (chunk != NULL) {
-      return chunk;
+    tried_arenas[i] = false;
+  }
+
+  int arena_i = 0;
+  while (tried_arenas_num < heap->arena_num) {
+    if (pthread_mutex_trylock(&(heap->arenas[arena_i].mutex)) == 0) {
+      chunk = alloc_chunk_from_arena(&(heap->arenas[arena_i]), chunk_size,
+                                     chunk_size_class);
+      pthread_mutex_unlock(&(heap->arenas[arena_i].mutex));
+      tried_arenas[arena_i] = true;
+      tried_arenas_num++;
+
+      if (chunk != NULL) {
+        free(tried_arenas);
+        return chunk;
+      }
+    }
+
+    arena_i++;
+    if (arena_i >= heap->arena_num) {
+      arena_i = 0;
     }
   }
 
+  free(tried_arenas);
   return NULL;
 }
 
@@ -155,8 +176,10 @@ free_chunk(heap_t *heap, void *chunk) {
   int arena_i = ((uint8_t *)chunk - heap->mem) / heap->arena_size;
   arena_t *arena = &(heap->arenas[arena_i]);
 
+  pthread_mutex_lock(&(heap->arenas[arena_i].mutex));
   uint8_t size_class = *((uint8_t *)chunk - 1);
   void **chunk_as_ptr = chunk;
   *chunk_as_ptr = arena->free_chunks[size_class];
   arena->free_chunks[size_class] = (uint8_t *)chunk_as_ptr;
+  pthread_mutex_unlock(&(heap->arenas[arena_i].mutex));
 }

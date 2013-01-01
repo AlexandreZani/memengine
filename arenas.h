@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include <stdio.h>
 
 typedef struct {
@@ -11,6 +12,7 @@ typedef struct {
   uint8_t *mem;
   uint8_t **free_chunks;
   uint8_t max_size_class;
+  pthread_mutex_t mutex;
 } arena_t;
 
 typedef struct {
