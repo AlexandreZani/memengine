@@ -13,8 +13,6 @@ test_create_heap() {
   assert_is_not_null(heap->arenas);
 
   for (int i = 0; i < heap->arena_num; i++) {
-    assert_is_not_null(heap->arenas[i].mem);
-    assert_equals(heap->arenas[i].mem, heap->arenas[i].open_field);
     assert_is_not_null(heap->arenas[i].free_chunks);
   }
   // This for some reason catches insufficient memory allocated for arenas.
@@ -43,6 +41,18 @@ test_alloc_chunk_fill_arenas() {
 
   // First allocate every chunk.
   for (int i = 0; i < 2 * 128 / 16; i++) {
+    assert_is_not_null(alloc_chunk(heap, 15));
+  }
+  // Now there should not be any memory left.
+  assert_is_null(alloc_chunk(heap, 15));
+}
+
+void
+test_alloc_chunk_fill_arenas_non_pow2() {
+  heap_t *heap = create_heap(168, 2);
+
+  // First allocate every chunk.
+  for (int i = 0; i < 2 * 160 / 16; i++) {
     assert_is_not_null(alloc_chunk(heap, 15));
   }
   // Now there should not be any memory left.
@@ -186,12 +196,16 @@ test_splitting_free_chunks_min_size() {
 
   assert_is_null(alloc_chunk(heap, 15));
 }
+
 int
 main(int argc, char **argv) {
+  /*
   test_create_heap();
   test_alloc_chunk_basic();
   test_alloc_chunk_fill_arenas();
   test_free_chunk();
   test_splitting_free_chunks();
   test_splitting_free_chunks_min_size();
+  */
+  test_alloc_chunk_fill_arenas_non_pow2();
 }

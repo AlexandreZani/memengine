@@ -38,6 +38,25 @@ calc_size_class(size_t size) {
   return size_class;
 }
 
+/*
+ * This function calculates the maximum chunk size and size_class that can fit
+ * in a "size" of memory.
+ */
+void
+calc_max_size_class_and_max_chunk_size(size_t size, uint8_t *size_class,
+    size_t *chunk_size) {
+  *size_class = 0;
+  *chunk_size = 1;
+
+  while ((*chunk_size) <= size) {
+    (*size_class) += 1;
+    (*chunk_size) *= 2;
+  }
+
+  (*size_class) -= 1;
+  (*chunk_size) /= 2;
+}
+
 heap_t*
 create_heap(size_t arena_size, uint32_t arena_num) {
   heap_t *heap = malloc(sizeof(heap_t));
@@ -58,22 +77,44 @@ create_heap(size_t arena_size, uint32_t arena_num) {
   if (heap->arenas == NULL) {
     return NULL;
   }
+  uint8_t max_size_class;
+  size_t max_chunk_size;
+  uint8_t *mem;
 
-  // Arenas cannot contain a chunk with a class size larger than the class
-  // size which fits the whole arena.
-  uint8_t max_size_class = calc_size_class(heap->arena_size);
   for (int arena_i = 0; arena_i < heap->arena_num; arena_i++) {
-    pthread_mutex_init(&(heap->arenas[arena_i].mutex), NULL);
-    heap->arenas[arena_i].max_size_class = max_size_class;
     heap->arenas[arena_i].arena_size = heap->arena_size;
-    heap->arenas[arena_i].mem = heap->mem + (arena_i * heap->arena_size);
-    heap->arenas[arena_i].open_field = heap->arenas[arena_i].mem;
+    pthread_mutex_init(&(heap->arenas[arena_i].mutex), NULL);
+
+    // Arenas cannot contain a chunk with a class size larger than the class
+    // size which fits the whole arena.
+    calc_max_size_class_and_max_chunk_size(heap->arena_size, &max_size_class,
+        &max_chunk_size);
+    heap->arenas[arena_i].max_size_class = max_size_class;
+
+    // We need a table of linked lists with an entry for each class size.
     heap->arenas[arena_i].free_chunks = malloc((max_size_class + 1) * sizeof(void *));
     if (heap->arenas[arena_i].free_chunks == NULL) {
       return NULL;
     }
     for (int free_i = 0; free_i < max_size_class; free_i++) {
       heap->arenas[arena_i].free_chunks[free_i] = NULL;
+    }
+
+    // The memory that is allocated for that arena is placed in the free list.
+    mem = heap->mem + (arena_i * heap->arena_size);
+
+    size_t remaining_mem = heap->arena_size;
+
+    // We break up the available memory into chunks and insert those chunks in
+    // the free list. We make the chunks as large as possible. (very greedy
+    // algorithm here)
+    while (remaining_mem > MIN_CHUNK_SIZE) {
+      calc_max_size_class_and_max_chunk_size(remaining_mem, &max_size_class,
+          &max_chunk_size);
+      *mem = max_size_class;
+      heap->arenas[arena_i].free_chunks[max_size_class] = mem + 1;
+      mem += max_chunk_size;
+      remaining_mem -= max_chunk_size;
     }
   }
 
@@ -88,13 +129,6 @@ alloc_chunk_from_arena(arena_t *arena, size_t chunk_size,
     chunk = arena->free_chunks[chunk_size_class];
     arena->free_chunks[chunk_size_class] = *(uint8_t **)chunk;
     return (void *)chunk;
-  }
-
-  if (arena->open_field - arena->mem <= (arena->arena_size - chunk_size)) {
-    chunk = arena->open_field;
-    *chunk = chunk_size_class;
-    arena->open_field += chunk_size;
-    return (void *)(chunk + 1);
   }
 
   uint8_t size_class = chunk_size_class;
