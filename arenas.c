@@ -125,14 +125,9 @@ void *
 alloc_chunk_from_arena(arena_t *arena, size_t chunk_size,
     uint8_t chunk_size_class) {
   uint8_t *chunk = NULL;
-  if (arena->free_chunks[chunk_size_class] != NULL) {
-    chunk = arena->free_chunks[chunk_size_class];
-    arena->free_chunks[chunk_size_class] = *(uint8_t **)chunk;
-    return (void *)chunk;
-  }
-
   uint8_t size_class = chunk_size_class;
   size_t size = chunk_size;
+
   while (arena->free_chunks[size_class] == NULL) {
     if (size_class >= arena->max_size_class) {
       return NULL;
