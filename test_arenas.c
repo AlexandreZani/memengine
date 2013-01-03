@@ -97,7 +97,6 @@ test_free_chunk() {
   assert_is_null(alloc_chunk(heap, 15));
 }
 
-
 void
 test_splitting_free_chunks() {
   heap_t *heap = create_heap(256, 4);
@@ -196,6 +195,40 @@ test_splitting_free_chunks_min_size() {
   assert_is_null(alloc_chunk(heap, 15));
 }
 
+void
+test_free_and_alloc_chunk() {
+  heap_t *heap = create_heap(256, 4);
+  void *chunk0, *chunk3, *chunk10, *chunk15;
+
+  // First allocate every chunk.
+  for (int i = 0; i < 4 * 256 / 64; i++) {
+    if (i == 0) {
+      chunk0 = alloc_chunk(heap, 63);
+      assert_is_not_null(chunk0);
+    } else if (i == 3) {
+      chunk3 = alloc_chunk(heap, 63);
+      assert_is_not_null(chunk3);
+    } else if (i == 10) {
+      chunk10 = alloc_chunk(heap, 63);
+      assert_is_not_null(chunk10);
+    } else if (i == 15) {
+      chunk15 = alloc_chunk(heap, 63);
+      assert_is_not_null(chunk15);
+    } else {
+      assert_is_not_null(alloc_chunk(heap, 63));
+    }
+  }
+  // Now there should not be any memory left.
+  assert_is_null(alloc_chunk(heap, 63));
+  assert_is_null(alloc_chunk(heap, 31));
+  assert_is_null(alloc_chunk(heap, 15));
+
+  assert_is_not_null(free_and_alloc_chunk(heap, chunk0, 31));
+  assert_is_not_null(alloc_chunk(heap, 31));
+  assert_is_null(alloc_chunk(heap, 31));
+  assert_is_null(alloc_chunk(heap, 15));
+}
+
 int
 main(int argc, char **argv) {
   test_create_heap();
@@ -205,4 +238,5 @@ main(int argc, char **argv) {
   test_splitting_free_chunks();
   test_splitting_free_chunks_min_size();
   test_alloc_chunk_fill_arenas_non_pow2();
+  test_free_and_alloc_chunk();
 }

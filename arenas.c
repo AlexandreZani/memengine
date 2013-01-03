@@ -232,3 +232,21 @@ free_chunk(heap_t *heap, void *chunk) {
   free_chunk_from_arena(&(heap->arenas[arena_i]), chunk);
   pthread_mutex_unlock(&(heap->arenas[arena_i].mutex));
 }
+
+void*
+free_and_alloc_chunk(heap_t *heap, void *chunk, size_t size) {
+  // First, calculate in what arena this chunk belongs.
+  int arena_i = ((uint8_t *)chunk - heap->mem) / heap->arena_size;
+  // Get a lock on that arena
+  pthread_mutex_lock(&(heap->arenas[arena_i].mutex));
+  free_chunk_from_arena(&(heap->arenas[arena_i]), chunk);
+
+  size_t chunk_size;
+  uint8_t chunk_size_class;
+  calc_size_class_and_min_chunk_size(size, &chunk_size_class, &chunk_size);
+  chunk = alloc_chunk_from_arena(&(heap->arenas[arena_i]), chunk_size,
+                                 chunk_size_class);
+  // Unlock the arena
+  pthread_mutex_unlock(&(heap->arenas[arena_i].mutex));
+  return chunk;
+}
