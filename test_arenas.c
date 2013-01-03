@@ -199,13 +199,11 @@ test_splitting_free_chunks_min_size() {
 
 int
 main(int argc, char **argv) {
-  /*
   test_create_heap();
   test_alloc_chunk_basic();
   test_alloc_chunk_fill_arenas();
   test_free_chunk();
   test_splitting_free_chunks();
   test_splitting_free_chunks_min_size();
-  */
   test_alloc_chunk_fill_arenas_non_pow2();
 }
