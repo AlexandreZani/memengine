@@ -98,7 +98,6 @@ test_free_chunk() {
 }
 
 
-// Implement chunk splitting.
 void
 test_splitting_free_chunks() {
   heap_t *heap = create_heap(256, 4);
