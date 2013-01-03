@@ -128,6 +128,8 @@ alloc_chunk_from_arena(arena_t *arena, size_t chunk_size,
   uint8_t size_class = chunk_size_class;
   size_t size = chunk_size;
 
+  // First, we look for the smallest available free chunk which would satisfy
+  // the request.
   while (arena->free_chunks[size_class] == NULL) {
     if (size_class >= arena->max_size_class) {
       return NULL;
@@ -136,6 +138,8 @@ alloc_chunk_from_arena(arena_t *arena, size_t chunk_size,
     size *= 2;
   }
 
+  // Then we break the chunk in half until it is the smallest chunk that can
+  // satisfy the request.
   uint8_t *big_chunk;
   void **big_chunk_as_ptr;
   while (size_class > chunk_size_class) {
@@ -169,18 +173,28 @@ alloc_chunk(heap_t *heap, size_t size) {
   uint8_t chunk_size_class;
   calc_size_class_and_min_chunk_size(size, &chunk_size_class, &chunk_size);
 
+  // First, we initialize a list of all the arenas we can try to allocate from
   int tried_arenas_num = 0;
   bool *tried_arenas = malloc(sizeof(bool) * heap->arena_num);
   for (int i = 0; i < heap->arena_num; i++) {
     tried_arenas[i] = false;
   }
 
+  // Then we make sure to try every arena.
   int arena_i = 0;
   while (tried_arenas_num < heap->arena_num) {
+    // If we have tried this arena already, don't try it again.
+    if (tried_arenas[arena_i]) {
+      continue;
+    }
+
+    // If we can get a lock on this arena, try to allocate from it.
     if (pthread_mutex_trylock(&(heap->arenas[arena_i].mutex)) == 0) {
+      // Try to allocate from this arena.
       chunk = alloc_chunk_from_arena(&(heap->arenas[arena_i]), chunk_size,
                                      chunk_size_class);
       pthread_mutex_unlock(&(heap->arenas[arena_i].mutex));
+      // Mark this arena as tried.
       tried_arenas[arena_i] = true;
       tried_arenas_num++;
 
@@ -202,12 +216,14 @@ alloc_chunk(heap_t *heap, size_t size) {
 
 void
 free_chunk(heap_t *heap, void *chunk) {
+  // First, calculate in what arena this chunk belongs.
   int arena_i = ((uint8_t *)chunk - heap->mem) / heap->arena_size;
   arena_t *arena = &(heap->arenas[arena_i]);
 
   pthread_mutex_lock(&(heap->arenas[arena_i].mutex));
   uint8_t size_class = *((uint8_t *)chunk - 1);
   void **chunk_as_ptr = chunk;
+  // Put that chunk on the free list.
   *chunk_as_ptr = arena->free_chunks[size_class];
   arena->free_chunks[size_class] = (uint8_t *)chunk_as_ptr;
   pthread_mutex_unlock(&(heap->arenas[arena_i].mutex));
