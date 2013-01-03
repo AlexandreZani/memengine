@@ -54,7 +54,7 @@ void
 test_hash_table_create() {
   hash_table_t *table = create_hash_table(16);
   assert_equals(0xf, table->mask);
-  assert_not_equals(0, table->entries);
+  assert_is_not_null(table->entries);
 }
 
 void
