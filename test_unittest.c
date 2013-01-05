@@ -1,6 +1,16 @@
 #include "unittest.h"
 
 void
+test_assert_true() {
+  assert_true(0 == 0);
+}
+
+void
+test_assert_false() {
+  assert_false(0 != 0);
+}
+
+void
 test_assert_equals() {
   assert_equals(0, 0);
 }
@@ -77,6 +87,8 @@ test_assert_not_equals_buf() {
 
 int
 main(int argc, char **argv) {
+  test_assert_true();
+  test_assert_false();
   test_assert_equals();
   test_assert_not_equals();
   test_assert_is();

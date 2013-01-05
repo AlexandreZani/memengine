@@ -7,6 +7,9 @@
 
 #define UNITTEST_ABS(a) ((a) >= 0 ? (a) : -1 * (a))
 
+#define assert_true(cond) assert((cond))
+#define assert_false(cond) assert(!(cond))
+
 #define assert_equals(a, b) assert((a) == (b))
 #define assert_not_equals(a, b) assert((a) != (b))
 
