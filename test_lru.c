@@ -75,24 +75,59 @@ void
 test_mark_as_used() {
   lru_queue_t *lru_queue = create_lru_queue();
 
-  cache_entry_t *cache_entry_1 = malloc(calc_cache_entry_size(1, 1));
-  assemble_cache_entry(cache_entry_1, " ", 1, " ", 1);
-  cache_entry_t *cache_entry_2 = malloc(calc_cache_entry_size(1, 1));
-  assemble_cache_entry(cache_entry_2, " ", 1, " ", 1);
-  cache_entry_t *cache_entry_3 = malloc(calc_cache_entry_size(1, 1));
-  assemble_cache_entry(cache_entry_3, " ", 1, " ", 1);
+  cache_entry_t *c1 = malloc(calc_cache_entry_size(1, 1));
+  assemble_cache_entry(c1, " ", 1, " ", 1);
+  cache_entry_t *c2 = malloc(calc_cache_entry_size(1, 1));
+  assemble_cache_entry(c2, " ", 1, " ", 1);
+  cache_entry_t *c3 = malloc(calc_cache_entry_size(1, 1));
+  assemble_cache_entry(c3, " ", 1, " ", 1);
   
-  lru_add_new_entry(lru_queue, cache_entry_1);
-  lru_add_new_entry(lru_queue, cache_entry_2);
-  lru_add_new_entry(lru_queue, cache_entry_3);
+  lru_add_new_entry(lru_queue, c1);
+  lru_add_new_entry(lru_queue, c2);
+  lru_add_new_entry(lru_queue, c3);
+  assert_queue_equals(lru_queue, 3, c3, c2, c1);
 
-  assert(lru_bump_used_entry(lru_queue, cache_entry_2));
-  assert_equals(cache_entry_2, lru_queue->most_recent);
+  assert_true(lru_bump_used_entry(lru_queue, c2));
+  assert_queue_equals(lru_queue, 3, c2, c3, c1);
+
+  assert_true(lru_bump_used_entry(lru_queue, c1));
+  assert_queue_equals(lru_queue, 3, c1, c2, c3);
+
+  assert_true(lru_bump_used_entry(lru_queue, c1));
+  assert_queue_equals(lru_queue, 3, c1, c2, c3);
+}
+
+void
+test_very_short_lru_queue() {
+  lru_queue_t *lru_queue = create_lru_queue();
+
+  cache_entry_t *c1 = malloc(calc_cache_entry_size(1, 1));
+  assemble_cache_entry(c1, " ", 1, " ", 1);
+  cache_entry_t *c2 = malloc(calc_cache_entry_size(1, 1));
+  assemble_cache_entry(c2, " ", 1, " ", 1);
+
+  lru_add_new_entry(lru_queue, c1);
+  assert_true(lru_bump_used_entry(lru_queue, c1));
+  assert_equals(lru_queue->most_recent, c1);
+  assert_equals(lru_queue->least_recent, c1);
+  assert_is_null(c1->lru_more_recent);
+  assert_is_null(c1->lru_less_recent);
+
+  lru_add_new_entry(lru_queue, c2);
+  assert_queue_equals(lru_queue, 2, c2, c1);
+
+  assert_true(lru_bump_used_entry(lru_queue, c1));
+  assert_queue_equals(lru_queue, 2, c1, c2);
+
+  assert_true(lru_bump_used_entry(lru_queue, c1));
+  assert_queue_equals(lru_queue, 2, c1, c2);
 }
 
 int
 main(int argc, char **argv) {
   test_create_lru_queue();
   test_add_to_queue();
+  test_mark_as_used();
+  test_very_short_lru_queue();
   return 0;
 }

@@ -26,9 +26,23 @@ lru_add_new_entry(lru_queue_t *lru_queue, cache_entry_t *cache_entry) {
 
 bool
 lru_bump_used_entry(lru_queue_t *lru_queue, cache_entry_t *cache_entry) {
+  if (cache_entry == lru_queue->most_recent) {
+    return true;
+  }
   cache_entry->lru_more_recent->lru_less_recent = cache_entry->lru_less_recent;
-  cache_entry->lru_less_recent->lru_more_recent = cache_entry->lru_more_recent;
+  if (cache_entry->lru_less_recent != NULL) {
+    cache_entry->lru_less_recent->lru_more_recent = cache_entry->lru_more_recent;
+  }
+
+  // If we are bumping forward the least recent entry, set the second-least
+  // recent entry as least recent
+  if (cache_entry == lru_queue->least_recent) {
+    lru_queue->least_recent = cache_entry->lru_more_recent;
+  }
+
   cache_entry->lru_less_recent = lru_queue->most_recent;
+  cache_entry->lru_more_recent = NULL;
+  lru_queue->most_recent->lru_more_recent = cache_entry;
   lru_queue->most_recent = cache_entry;
   return true;
 }
