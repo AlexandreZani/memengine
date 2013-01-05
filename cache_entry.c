@@ -5,6 +5,8 @@
 void
 assemble_cache_entry(cache_entry_t *cache_entry,
     void *key, size_t key_size, void *data, size_t data_size) {
+  cache_entry->lru_more_recent = NULL;
+  cache_entry->lru_less_recent = NULL;
   cache_entry->key_size = key_size;
   cache_entry->data_size = data_size;
   cache_entry->hash_table_next = NULL;

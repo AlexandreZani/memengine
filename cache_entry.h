@@ -9,6 +9,8 @@ struct cache_entry_struct {
   void *key;
   void *data;
   struct cache_entry_struct *hash_table_next;
+  struct cache_entry_struct *lru_less_recent;
+  struct cache_entry_struct *lru_more_recent;
 };
 
 typedef struct cache_entry_struct cache_entry_t;

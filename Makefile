@@ -33,6 +33,14 @@ hash_test: unittest.o test_hash.c hash.o
 	$(CC) test_hash.c hash.o unittest.o cache_entry.o -o hash_test
 	./hash_test
 
+# lru
+lru.o: lru.c lru.h cache_entry.o
+	$(CC) -c lru.c
+
+lru_test: unittest.o test_lru.c lru.o
+	$(CC) test_lru.c lru.o cache_entry.o unittest.o -o lru_test
+	./lru_test
+
 # unittest
 unittest.o: unittest.c unittest.h
 	$(CC) -c unittest.c
@@ -41,9 +49,9 @@ unittest_test: test_unittest.c unittest.o
 	$(CC) test_unittest.c unittest.o -o unittest_test
 	./unittest_test
 
-test: clean unittest_test hash_test slabs_test cache_entry_test arenas_test
+test: clean unittest_test hash_test slabs_test cache_entry_test arenas_test lru_test
 
-.PRECIOUS: unittest_test hash_test slabs_test cache_entry_test arenas_test
+.PRECIOUS: unittest_test hash_test slabs_test cache_entry_test arenas_test lru_test
 
 lib: hash.o
 
