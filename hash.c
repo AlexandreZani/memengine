@@ -66,6 +66,15 @@ create_hash_table(size_t size) {
   return table;
 }
 
+void
+destroy_hash_table(hash_table_t *hash_table) {
+  if (hash_table->entries != NULL) {
+    free(hash_table->entries);
+    hash_table->entries = NULL;
+  }
+  free(hash_table);
+}
+
 cache_entry_t *
 hash_table_index_entry(hash_table_t *table, cache_entry_t *entry) {
   uint32_t hash = hash_8(entry->key, entry->key_size);
