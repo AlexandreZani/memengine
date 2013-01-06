@@ -51,7 +51,7 @@ hash_32(uint32_t *data, uint32_t len) {
 }
 
 hash_table_t*
-create_hash_table(uint32_t size) {
+create_hash_table(size_t size) {
   hash_table_t *table = malloc(sizeof(hash_table_t));
 
   table->mask = 0x1;

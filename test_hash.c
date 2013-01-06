@@ -309,6 +309,11 @@ test_hash_table_deindex_collisions() {
   assert_is_null(hash_table_get_entry(table, key, key_size3));
 }
 
+test_hash_table_create_non_pow2() {
+  hash_table_t *hash_table = create_hash_table(9);
+  assert_equals(0xF, hash_table->mask);
+}
+
 int
 main(int argc, char **argv) {
   test_hash_32_equal();
@@ -326,9 +331,7 @@ main(int argc, char **argv) {
   test_hash_table_deindex();
   test_hash_table_deindex_collisions();
   test_hash_table_deindex_null();
-  /*
-  test_hash_table_unset_null();
-  */
+  test_hash_table_create_non_pow2();
 
   return 0;
 }
