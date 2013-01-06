@@ -22,6 +22,7 @@ typedef struct {
 } heap_t;
 
 extern heap_t *create_heap(size_t arena_size, uint32_t arena_num);
+extern void destroy_heap(heap_t *heap);
 extern void *alloc_chunk(heap_t *heap, size_t size);
 extern void free_chunk(heap_t *heap, void *chunk);
 extern void *free_and_alloc_chunk(heap_t *heap, void *chunk, size_t size);
