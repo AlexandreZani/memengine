@@ -9,10 +9,11 @@ typedef struct {
   cache_entry_t *least_recent;
 } lru_queue_t;
 
-lru_queue_t *create_lru_queue();
-void lru_add_new_entry(lru_queue_t *lru_queue, cache_entry_t *cache_entry);
-bool lru_bump_used_entry(lru_queue_t *lru_queue, cache_entry_t *cache_entry);
-cache_entry_t *lru_pop_least_recent(lru_queue_t *lru_queue);
-bool lru_remove_entry(lru_queue_t *lru_queue, cache_entry_t * cache_entry);
+extern lru_queue_t *create_lru_queue();
+extern void lru_add_new_entry(lru_queue_t *lru_queue, cache_entry_t *cache_entry);
+extern bool lru_bump_used_entry(lru_queue_t *lru_queue, cache_entry_t *cache_entry);
+extern cache_entry_t *lru_pop_least_recent(lru_queue_t *lru_queue);
+extern bool lru_remove_entry(lru_queue_t *lru_queue, cache_entry_t * cache_entry);
+extern void destroy_lru_queue(lru_queue_t *lru_queue);
 
 #endif

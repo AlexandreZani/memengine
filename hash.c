@@ -51,7 +51,7 @@ hash_32(uint32_t *data, uint32_t len) {
 }
 
 hash_table_t*
-create_hash_table(uint32_t size) {
+create_hash_table(size_t size) {
   hash_table_t *table = malloc(sizeof(hash_table_t));
 
   table->mask = 0x1;
@@ -64,6 +64,15 @@ create_hash_table(uint32_t size) {
   memset(table->entries, 0x00, sizeof(cache_entry_t *) * (table->mask+1));
 
   return table;
+}
+
+void
+destroy_hash_table(hash_table_t *hash_table) {
+  if (hash_table->entries != NULL) {
+    free(hash_table->entries);
+    hash_table->entries = NULL;
+  }
+  free(hash_table);
 }
 
 cache_entry_t *

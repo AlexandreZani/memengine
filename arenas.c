@@ -1,6 +1,7 @@
 #include "arenas.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 
 // If the chunk is too small, we can't fit a pointer in it and the free
 // list breaks.
@@ -113,12 +114,35 @@ create_heap(size_t arena_size, uint32_t arena_num) {
           &max_chunk_size);
       *mem = max_size_class;
       heap->arenas[arena_i].free_chunks[max_size_class] = mem + 1;
+      *(uint8_t **)(mem + 1) = NULL;
       mem += max_chunk_size;
       remaining_mem -= max_chunk_size;
     }
   }
 
   return heap;
+}
+
+void
+destroy_heap(heap_t *heap) {
+  // First walk over the arenas and all they contain.
+  if (heap->arenas != NULL) {
+    for (int arena_i = 0; arena_i < heap->arena_num; arena_i++) {
+      if (heap->arenas[arena_i].free_chunks != NULL) {
+        free(heap->arenas[arena_i].free_chunks);
+        heap->arenas[arena_i].free_chunks = NULL;
+      }
+    }
+    free(heap->arenas);
+    heap->arenas = NULL;
+  }
+
+  if (heap->mem != NULL) {
+    free(heap->mem);
+    heap->mem = NULL;
+  }
+
+  free(heap);
 }
 
 void *

@@ -9,6 +9,13 @@ create_lru_queue() {
 }
 
 void
+destroy_lru_queue(lru_queue_t *lru_queue) {
+  lru_queue->most_recent = NULL;
+  lru_queue->least_recent = NULL;
+  free(lru_queue);
+}
+
+void
 lru_add_new_entry(lru_queue_t *lru_queue, cache_entry_t *cache_entry) {
   if (lru_queue->most_recent == NULL) {
     lru_queue->most_recent = cache_entry;

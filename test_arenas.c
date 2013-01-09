@@ -18,6 +18,7 @@ test_create_heap() {
   // This for some reason catches insufficient memory allocated for arenas.
   // Don't ask me why.
   malloc(1);
+  destroy_heap(heap);
 }
 
 void
@@ -33,6 +34,7 @@ test_alloc_chunk_basic() {
   // Checking that the header has been properly set.
   assert_equals(4, *(((uint8_t *)chunk1)-1));
   assert_equals(5, *(((uint8_t *)chunk2)-1));
+  destroy_heap(heap);
 }
 
 void
@@ -229,6 +231,12 @@ test_free_and_alloc_chunk() {
   assert_is_null(alloc_chunk(heap, 15));
 }
 
+void
+test_destroy_heap() {
+  heap_t *heap = create_heap(256, 4);
+  destroy_heap(heap);
+}
+
 int
 main(int argc, char **argv) {
   test_create_heap();
@@ -239,4 +247,5 @@ main(int argc, char **argv) {
   test_splitting_free_chunks_min_size();
   test_alloc_chunk_fill_arenas_non_pow2();
   test_free_and_alloc_chunk();
+  test_destroy_heap();
 }

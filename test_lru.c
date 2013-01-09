@@ -190,6 +190,12 @@ test_remove_entry() {
   assert_false(lru_remove_entry(lru_queue, c3));
 }
 
+void
+test_destroy_lru_queue() {
+  lru_queue_t *lru_queue = create_lru_queue();
+  destroy_lru_queue(lru_queue);
+}
+
 int
 main(int argc, char **argv) {
   test_create_lru_queue();
@@ -198,5 +204,6 @@ main(int argc, char **argv) {
   test_very_short_lru_queue_mark_as_used();
   test_pop_least_recent();
   test_remove_entry();
+  test_destroy_lru_queue();
   return 0;
 }
