@@ -10,3 +10,13 @@ create_cache(size_t mem_div_size, uint32_t mem_div_num,
   cache->lru_queue = create_lru_queue();
   return cache;
 }
+
+void
+destroy_cache(cache_t *cache) {
+  destroy_hash_table(cache->hash_table);
+  cache->hash_table = NULL;
+  destroy_lru_queue(cache->lru_queue);
+  cache->lru_queue = NULL;
+  destroy_heap(cache->heap);
+  cache->heap = NULL;
+}

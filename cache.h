@@ -15,5 +15,6 @@ typedef struct {
 } cache_t;
 
 extern cache_t *create_cache(size_t mem_div_size, uint32_t mem_div_num, size_t hash_table_size);
+extern void destroy_cache(cache_t *cache);
 
 #endif
