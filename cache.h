@@ -21,5 +21,6 @@ extern void destroy_cache(cache_t *cache);
 extern void cache_set_item(cache_t *cache, uint8_t *key, size_t key_size,
     uint8_t* data, size_t data_size);
 extern cache_entry_t* cache_get_item(cache_t *cache, uint8_t *key,
-    size_t key_sz);
+    size_t key_size);
+extern void cache_unset_item(cache_t *cache, uint8_t *key, size_t key_size);
 #endif
