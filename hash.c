@@ -53,6 +53,7 @@ hash_32(uint32_t *data, uint32_t len) {
 hash_table_t*
 create_hash_table(size_t size) {
   hash_table_t *table = malloc(sizeof(hash_table_t));
+  pthread_mutex_init(&(table->mutex), NULL);
 
   table->mask = 0x1;
   while (table->mask < size-1) {
@@ -78,6 +79,7 @@ destroy_hash_table(hash_table_t *hash_table) {
 cache_entry_t *
 hash_table_index_entry(hash_table_t *table, cache_entry_t *entry) {
   uint32_t hash = hash_8(entry->key, entry->key_size);
+  pthread_mutex_lock(&(table->mutex));
   cache_entry_t **index_entry = table->entries + (hash & table->mask);
   cache_entry_t *to_free = NULL;
 
@@ -94,11 +96,13 @@ hash_table_index_entry(hash_table_t *table, cache_entry_t *entry) {
   }
 
   *index_entry = entry;
+  pthread_mutex_unlock(&(table->mutex));
   return to_free;
 }
 
 cache_entry_t *
 hash_table_get_entry(hash_table_t *table, uint8_t *key, size_t key_size) {
+  pthread_mutex_lock(&(table->mutex));
   uint32_t hash = hash_8(key, key_size);
   cache_entry_t **entry = table->entries + (hash & table->mask);
 
@@ -108,11 +112,13 @@ hash_table_get_entry(hash_table_t *table, uint8_t *key, size_t key_size) {
     entry = &((*entry)->hash_table_next);
   }
 
+  pthread_mutex_unlock(&(table->mutex));
   return *entry;
 }
 
 cache_entry_t *
 hash_table_deindex(hash_table_t *table, uint8_t *key, size_t key_size) {
+  pthread_mutex_lock(&(table->mutex));
   uint32_t hash = hash_8(key, key_size);
   cache_entry_t **entry = table->entries + (hash & table->mask);
   cache_entry_t *old_entry = NULL;
@@ -128,5 +134,6 @@ hash_table_deindex(hash_table_t *table, uint8_t *key, size_t key_size) {
     *entry = (*entry)->hash_table_next;
   }
 
+  pthread_mutex_unlock(&(table->mutex));
   return old_entry;
 }
