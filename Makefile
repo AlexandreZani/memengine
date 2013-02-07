@@ -1,6 +1,14 @@
 CFLAGS=-Wall -std=gnu99 -ggdb -D_THREAD_SAFE -pthread
 CC=gcc $(CFLAGS)
 
+# message
+message.o: message.c message.h
+	$(CC) -c message.c
+
+message_test: test_message.c unittest.o message.o
+	$(CC) test_message.c unittest.o message.o cache.o arenas.o hash.o lru.o cache_entry.o -o message_test
+	./message_test
+
 # cache
 cache.o: cache.c cache.h arenas.o hash.o lru.o cache_entry.o
 	$(CC) -c cache.c
@@ -57,9 +65,9 @@ unittest_test: test_unittest.c unittest.o
 	$(CC) test_unittest.c unittest.o -o unittest_test
 	./unittest_test
 
-test: clean unittest_test hash_test slabs_test cache_entry_test arenas_test lru_test cache_test
+test: clean unittest_test hash_test slabs_test cache_entry_test arenas_test lru_test cache_test message_test
 
-.PRECIOUS: unittest_test hash_test slabs_test cache_entry_test arenas_test lru_test cache_test
+.PRECIOUS: unittest_test hash_test slabs_test cache_entry_test arenas_test lru_test cache_test message_test
 
 lib: hash.o
 
