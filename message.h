@@ -8,6 +8,7 @@
 #define PROTOCOL_VERSION 0x00
 
 #define MESSAGE_TYPE_SET 0x00
+#define MESSAGE_TYPE_UNSET 0x01
 
 typedef struct __attribute__((__packed__)) {
   uint8_t protocol_version;

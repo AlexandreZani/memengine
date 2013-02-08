@@ -15,5 +15,8 @@ dispatch_message(cache_t *cache, message_header_t *header, uint8_t *key,
     case MESSAGE_TYPE_SET:
       cache_set_item(cache, key, header->key_size, data, header->data_size);
       break;
+    case MESSAGE_TYPE_UNSET:
+      cache_unset_item(cache, key, header->key_size);
+      break;
   }
 }
