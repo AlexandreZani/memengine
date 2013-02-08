@@ -109,11 +109,38 @@ test_dispatch_message_unset() {
   destroy_cache(cache);
 }
 
+void
+test_dispatch_message_get() {
+  cache_t *cache = create_cache(1024, 10, 128);
+  char *key = "some key";
+  char *data = "some data";
+
+  cache_set_item(cache, (uint8_t *)key, 8, (uint8_t *)data, 9);
+
+  message_header_t *header = malloc(sizeof(message_header_t));
+  header->protocol_version = PROTOCOL_VERSION;
+  header->message_type = MESSAGE_TYPE_GET;
+  header->key_size = 8;
+  header->data_size = 0;
+
+  response_message_t *response = NULL;
+  response = dispatch_message(cache, header, (uint8_t *)key, (uint8_t *)data);
+
+  assert_is_not_null(response);
+  assert_equals(9, response->data_size);
+  assert_equals_buf(data, response->data, response->data_size);
+
+  free(response);
+  free(header);
+  destroy_cache(cache);
+}
+
 int
 main(int argc, char **argv) {
   test_header_size();
   test_message_header_ntoh();
   test_dispatch_message_set();
   test_dispatch_message_unset();
+  test_dispatch_message_get();
   return 0;
 }
