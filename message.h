@@ -11,6 +11,9 @@
 #define MESSAGE_TYPE_UNSET 0x01
 #define MESSAGE_TYPE_GET 0x02
 
+#define RESPONSE_SUCCESS 0x00
+#define RESPONSE_FAILURE 0x01
+
 typedef struct __attribute__((__packed__)) {
   uint8_t protocol_version;
   uint8_t message_type;

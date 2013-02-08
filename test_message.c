@@ -74,7 +74,13 @@ test_dispatch_message_set() {
   header->key_size = 8;
   header->data_size = 9;
 
-  dispatch_message(cache, header, (uint8_t *)key, (uint8_t *)data);
+  response_message_t *response;
+  response = dispatch_message(cache, header, (uint8_t *)key, (uint8_t *)data);
+
+  assert_is_not_null(response);
+  assert_equals(sizeof(uint8_t), response->data_size);
+  assert_equals(RESPONSE_SUCCESS, *(response->data));
+
   cache_entry_t *cache_entry = cache_get_item(cache, (uint8_t *)key,
       header->key_size);
   assert_is_not_null(cache_entry);
@@ -100,7 +106,12 @@ test_dispatch_message_unset() {
   header->key_size = 8;
   header->data_size = 0;
 
-  dispatch_message(cache, header, (uint8_t *)key, (uint8_t *)data);
+  response_message_t *response;
+  response = dispatch_message(cache, header, (uint8_t *)key, (uint8_t *)data);
+
+  assert_equals(sizeof(uint8_t), response->data_size);
+  assert_equals(RESPONSE_SUCCESS, *(response->data));
+
   cache_entry_t *cache_entry = cache_get_item(cache, (uint8_t *)key,
       header->key_size);
   assert_is_null(cache_entry);
@@ -123,12 +134,36 @@ test_dispatch_message_get() {
   header->key_size = 8;
   header->data_size = 0;
 
-  response_message_t *response = NULL;
+  response_message_t *response;
   response = dispatch_message(cache, header, (uint8_t *)key, (uint8_t *)data);
 
   assert_is_not_null(response);
   assert_equals(9, response->data_size);
   assert_equals_buf(data, response->data, response->data_size);
+
+  free(response);
+  free(header);
+  destroy_cache(cache);
+}
+
+void
+test_dispatch_message_get_null() {
+  cache_t *cache = create_cache(1024, 10, 128);
+  char *key = "some key";
+  char *data = "some data";
+
+  message_header_t *header = malloc(sizeof(message_header_t));
+  header->protocol_version = PROTOCOL_VERSION;
+  header->message_type = MESSAGE_TYPE_GET;
+  header->key_size = 8;
+  header->data_size = 0;
+
+  response_message_t *response;
+  response = dispatch_message(cache, header, (uint8_t *)key, (uint8_t *)data);
+
+  assert_is_not_null(response);
+  assert_equals(0, response->data_size);
+  assert_is_null(response->data);
 
   free(response);
   free(header);
@@ -142,5 +177,6 @@ main(int argc, char **argv) {
   test_dispatch_message_set();
   test_dispatch_message_unset();
   test_dispatch_message_get();
+  test_dispatch_message_get_null();
   return 0;
 }
